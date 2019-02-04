@@ -110,3 +110,23 @@ it('can rateLimit different functions', () => {
     expect(testFn1).toHaveBeenCalledTimes(7);
     expect(testFn2).toHaveBeenCalledTimes(7);
 });
+
+it('can handle re-entrant behavior', () => {
+    let numTimesRun = 0;
+
+    let wrapped;
+    let testFn = jest.fn(() => {
+        if(numTimesRun < 2){
+            numTimesRun++;
+            wrapped();
+            numTimesRun++;
+        }
+    });
+
+    wrapped = rateLimit(testFn, 100);
+    wrapped();
+    expect(testFn).toHaveBeenCalledTimes(1);
+    clock.tick(100);
+    expect(testFn).toHaveBeenCalledTimes(2);
+
+});

@@ -53,7 +53,8 @@ Returns a function ```retFn``` that implements a more generalized version of mul
 1) parameters used when calling ```retFn``` will be passed to the corresponding call to ```fn```
 2) ```retFn``` returns a promise when invoked that will resolve to the value that the corresponding call to ```fn``` returns
 3) For every call to ```retFn``` there is a call to ```fn``` that happens as soon as possible
-4) Within any window of ```time``` milliseconds there is at most ```numInWindow``` promises returned by ```retFn``` that will be instantiated or be in a pending state for any amount of time in that window.
+4) Within any window of ```time``` milliseconds there is at most ```numInWindow``` promises returned by ```retFn``` that will be instantiated or be in a pending state for any amount of time in that window. *This last point is extremely important* as this makes the function have very different semantics than all previous functions. In other functions we don't care 
+how long a function is "active" for and it's just the number of times a function is called that we care about. However with this multiRateLimitWithPromise we now care how long a function takes, i.e. ```fn``` may return a promise and we care when that promise resolves. Think of rate limiting the number of ajax requests. So if you kind of graphed it out if you had time extend along the X-axis then a function being active with be a "bar" along that X-axis. The idea is that if you take a sliding window of time ms (100 in this case) and moved it along the X-axis you'd never have more than "numInWindow" bars inside that window.
 
 # How to take the challenge
 
@@ -64,7 +65,7 @@ You need to have the latest versions of babel (https://babeljs.io/), npm (https:
 3. run ```npm i``` to install dependencies
 4. implement the function bodies and test with ```npm test```
 5. commit your changes and push to github on your fork
-6. email omar@streak.com with a link to your repo
+6. email omar@streak.com with a link to your repo and some information on how long it took to complete the exercise
 
 # Tips
 
@@ -74,6 +75,5 @@ You need to have the latest versions of babel (https://babeljs.io/), npm (https:
 * testing uses jest (https://jestjs.io/) under the hood, so while developing if you just want to run one function you can do ```npm test delay``` or ```npm test multiRateLimit``` and it will only run that test file
 * there's a VS Code launch.json file included that should be properly configured so you should be able to use VS Code's built in debugger
 * if you use VS Code's built in debugger and want to debug just one test, then start the debugger while the X.test.js file is active and choose ```jest current file``` config.
-* don't spend a ton of time on this. If you're spending 5+ hours completing this challenge that's probably an indication you're not a good fit for what we're looking for right now
+* don't spend a ton of time on this. *Really* experienced people who have seen these problems before may be able to finish the entire challenge in under 30 minutes. If you're spending 3+ hours completing this challenge that's probably an indication you're not a good fit for what we're looking for right now
 * the unit tests are quote thorough and cover some tricky cases, if you're confused about some behavior look at what the unit tests are expecting
-* *bonus point:* for throttle and rateHandling implementations that handle the edge case where a passed in ```fn``` may in certain conditions call the throttled/rateLimited version in the same call stack (this is not tested)

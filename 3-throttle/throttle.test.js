@@ -79,3 +79,21 @@ it('can throttle different functions', () => {
     expect(testFn2).toHaveBeenCalledTimes(2);
 
 });
+
+it('can handle re-entrant behavior', () => {
+    let numTimesRun = 0;
+
+    let wrapped;
+    let testFn = jest.fn(() => {
+        if(numTimesRun < 2){
+            numTimesRun++;
+            wrapped();
+            numTimesRun++;
+        }
+    });
+
+    wrapped = throttle(testFn, 100);
+    wrapped();
+    expect(testFn).toHaveBeenCalledTimes(1);
+
+});
