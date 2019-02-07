@@ -8,4 +8,7 @@ function after ```time``` has elapsed.
 */
 
 export default function delay(fn, time){
+  return function() {
+  	setTimeout(fn, time);
+  }
 }

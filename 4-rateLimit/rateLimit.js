@@ -18,5 +18,25 @@ Returns a function ```retFn``` that upholds the following two invariants:
 
 
 export default function rateLimit(fn, time) {
-    
+	let pendingCalls = [];
+	let calling = false;
+
+	return function retFn(...args) {
+		pendingCalls.push(fn.bind(this, ...args));
+		attemptCall();
+	}  
+
+	function attemptCall() {
+		if (pendingCalls.length === 0 || calling) {
+			return;
+		}
+		
+		calling = true;
+    pendingCalls.shift().call();
+
+    setTimeout(() => {
+      calling = false;
+      attemptCall();
+    }, time);
+	}
 }
