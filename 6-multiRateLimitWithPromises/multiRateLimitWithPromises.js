@@ -28,7 +28,33 @@ limiting above. When invoked ```retFn``` upholds the following invariants:
     than "numInWindow" bars inside that window.
 
 */
+import * as Promise from 'bluebird';
 
 export default function multiRateLimitWithPromises(fn, time, numInWindow) {
-    
+  let callQueue = [];
+
+  return async function retFn(...args) {
+    const toInvoke = fn.bind(this, ...args);
+    callQueue = callQueue.filter(call => call.isPending() || call.finish < Date.now() - 1000)
+    return queueCall(toInvoke);
+  }
+
+  function queueCall(toCall) {
+    const windowStart = Math.max(0, Date.now() - time);
+
+    const callWindow = callQueue.filter(call => {
+      return call.isPending() || call.finish >= windowStart;
+    });
+
+    if (callWindow.length < numInWindow) {
+      const pendingCall = Promise.resolve(toCall());
+      pendingCall.then(() => pendingCall.finish = Date.now());
+      callQueue.push(pendingCall);
+      return pendingCall;
+    }
+
+    return Promise.any(callWindow)
+      .delay(0) // TODO
+      .then(() => queueCall(toCall));
+  }
 }
